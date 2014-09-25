@@ -1,12 +1,14 @@
 CC=gcc
 CFLAGS=-Wall
 DEBUGFLAGS=-D DEBUG
+SOURCE=unfill.c
+EXECUTABLE=unfill
 
 all:
-	$(CC) $(CFLAGS) triangle_distance.c -o tdist
+	$(CC) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
 
 debug:
-	$(CC) $(DEBUGFLAGS) $(CFLAGS) triangle_distance.c -o tdist
+	$(CC) $(DEBUGFLAGS) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
 
 clean:
-	rm -rf tdist
+	rm -rf $(EXECUTABLE)
