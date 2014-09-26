@@ -1,14 +1,18 @@
 CC=gcc
+GO=go build
 CFLAGS=-Wall
 DEBUGFLAGS=-D DEBUG
 SOURCE=unfill.c
 EXECUTABLE=unfill
+GOSOURCE=fill.go
+GOEXECUTABLE=fill
 
 all:
 	$(CC) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
+	$(GO) -o $(GOEXECUTABLE) $(GOSOURCE)
 
 debug:
 	$(CC) $(DEBUGFLAGS) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
 
 clean:
-	rm -rf $(EXECUTABLE)
+	rm -rf $(EXECUTABLE) $(GOEXECUTABLE)
