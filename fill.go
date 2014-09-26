@@ -48,7 +48,7 @@ func main() {
 }
 
 func readInputArray() [][]int {
-
+	return nil
 }
 
 func printUsage(commandName string) {
