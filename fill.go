@@ -66,8 +66,12 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 
 	for i := range distancesArray {
 		for j := range distancesArray[i] {
+			if i == j {
+				continue
+			}
 			if distancesArray[i][j] == -1 {
 				calculateMissingDistance(distancesArray, i, j)
+				return
 			} else {
 				result[i][j] = distancesArray[i][j]
 			}
@@ -77,7 +81,35 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 	return
 }
 
-func calculateMissingDistance(distancesArray [][]int, row int, column int) (result int) {
-	result = distancesArray[row][column]
+func calculateMissingDistance(distancesArray [][]int, row int, col int) (result int) {
+	log.Printf("Calculating distance for [%d, %d]", row, col)
+	firstDistanceCol := -1
+	secondDistanceCol := -1
+	firstDistance := -2
+	secondDistance := -2
+	for i := range distancesArray {
+		if i == row {
+			continue // distance should always be 0
+		}
+
+		if distancesArray[row][i] != -1 {
+			firstDistanceCol = i
+			firstDistance = distancesArray[row][firstDistanceCol]
+			i++
+			for i < len(distancesArray) {
+				if distancesArray[row][i] != -1 {
+					secondDistanceCol = i
+					secondDistance = distancesArray[row][secondDistanceCol]
+					log.Printf("Distances [%d, %d] = %d, [%d, %d] = %d", col, firstDistanceCol, distancesArray[col][firstDistanceCol], col, secondDistanceCol, distancesArray[col][secondDistanceCol])
+					break
+				}
+				i++
+			}
+			break
+		}
+	}
+	log.Printf("Found known distances to [%d, %d]: [%d, %d] = %d, [%d, %d] = %d",
+		row, col, row, firstDistanceCol, firstDistance, row, secondDistanceCol, secondDistance)
+
 	return
 }
