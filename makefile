@@ -13,6 +13,13 @@ all:
 
 debug:
 	$(CC) $(DEBUGFLAGS) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
+	$(GO) -o $(GOEXECUTABLE) $(GOSOURCE)
+
+c:
+	$(CC) $(DEBUGFLAGS) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
+
+go:
+	$(GO) -o $(GOEXECUTABLE) $(GOSOURCE)
 
 clean:
 	rm -rf $(EXECUTABLE) $(GOEXECUTABLE)
