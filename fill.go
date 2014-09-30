@@ -83,33 +83,24 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 
 func calculateMissingDistance(distancesArray [][]int, row int, col int) (result int) {
 	log.Printf("Calculating distance for [%d, %d]", row, col)
-	firstDistanceCol := -1
-	secondDistanceCol := -1
-	firstDistance := -2
-	secondDistance := -2
+
+	var differentDistances []int
+
 	for i := range distancesArray {
 		if i == row {
 			continue // distance should always be 0
 		}
 
-		if distancesArray[row][i] != -1 {
-			firstDistanceCol = i
-			firstDistance = distancesArray[row][firstDistanceCol]
-			i++
-			for i < len(distancesArray) {
-				if distancesArray[row][i] != -1 {
-					secondDistanceCol = i
-					secondDistance = distancesArray[row][secondDistanceCol]
-					log.Printf("Distances [%d, %d] = %d, [%d, %d] = %d", col, firstDistanceCol, distancesArray[col][firstDistanceCol], col, secondDistanceCol, distancesArray[col][secondDistanceCol])
-					break
-				}
-				i++
-			}
-			break
+		distanceToSource := distancesArray[row][i]
+		distanceToAnother := distancesArray[col][i]
+
+		if distanceToSource != -1 && distanceToAnother != -1 && distanceToSource-distanceToAnother > 200 {
+			differentDistances = append(differentDistances, i)
+			log.Printf("distances [%d, %d] = %d, [%d, %d] = %d", col, i, distanceToSource, row, i, distanceToAnother)
 		}
 	}
-	log.Printf("Found known distances to [%d, %d]: [%d, %d] = %d, [%d, %d] = %d",
-		row, col, row, firstDistanceCol, firstDistance, row, secondDistanceCol, secondDistance)
+
+	log.Printf("Known distance rows = %v", differentDistances)
 
 	return
 }
