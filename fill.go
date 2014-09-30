@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 )
@@ -26,7 +27,18 @@ func main() {
 	in := bufio.NewScanner(os.Stdin)
 
 	inputNumbers := readDistancesArray(resultDimension, *in)
-	fillMissingDistances(inputNumbers)
+	fillingResult := fillMissingDistances(inputNumbers)
+	for i := 0; i < len(fillingResult); i++ {
+		for j := 0; j < len(fillingResult)-1; j++ {
+			processedDistance := fillingResult[i][j]
+			if processedDistance != -1 {
+				fmt.Printf("%d\t", processedDistance)
+			} else {
+				fmt.Printf("?\t")
+			}
+		}
+		fmt.Printf("%d\n", fillingResult[i][len(fillingResult)-1])
+	}
 }
 
 func readDistancesArray(size int, input bufio.Scanner) (result [][]int) {
@@ -54,7 +66,7 @@ func readDistancesArray(size int, input bufio.Scanner) (result [][]int) {
 		}
 		amountOfNumbers++
 	}
-	log.Printf("read %d words\n", amountOfNumbers)
+	//log.Printf("read %d words\n", amountOfNumbers)
 	return
 }
 
@@ -66,12 +78,8 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 
 	for i := range distancesArray {
 		for j := range distancesArray[i] {
-			if i == j {
-				continue
-			}
 			if distancesArray[i][j] == -1 {
-				calculateMissingDistance(distancesArray, i, j)
-				return
+				result[i][j] = calculateMissingDistance(distancesArray, i, j)
 			} else {
 				result[i][j] = distancesArray[i][j]
 			}
@@ -82,32 +90,44 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 }
 
 func calculateMissingDistance(distances [][]int, row int, col int) (result int) {
-	log.Printf("Calculating distance for [%d, %d]", row, col)
+	//log.Printf("Calculating distance for [%d, %d]", row, col)
 
 	var differentDistances []int
+	result = -1
 
 	for i := range distances {
-		if i == row {
-			continue // distance should always be 0
-		}
-
 		toSource := distances[row][i]
 		toAnother := distances[col][i]
+		if i == row || toSource == -1 || toAnother == -1 {
+			continue
+		}
 
-		goodEnough := float64(toSource)-float64(toAnother) > float64(toSource+toAnother)/2.0*0.05 // TODO: replace with function that calculates average and replace 5% (0.05) with meaningful constant
+		differentEnough := float64(toSource)-float64(toAnother) > float64(toSource+toAnother)/2.0*0.05 // TODO: replace with function that calculates average and replace 5% (0.05) with meaningful constant
 
-		if toSource != -1 && toAnother != -1 && goodEnough {
-			differentDistances = append(differentDistances, i)
-			log.Printf("distances [%d, %d] = %d, [%d, %d] = %d", col, i, toSource, row, i, toAnother)
+		if differentEnough {
+			differentDistances = append(differentDistances, toSource, toAnother)
+			//log.Printf("distances [%d, %d] = %d, [%d, %d] = %d", col, i, toSource, row, i, toAnother)
 		}
 	}
-	for i := range distances {
+
+	for i := range differentDistances {
 		// TODO: find most common range of distances, i.e. distances within found
 		// range should occur most frequently in differentDistances
-		_ = i
+		for j := range differentDistances {
+			if j == i {
+				continue
+			}
+			firstDistance := differentDistances[i]
+			secondDistance := differentDistances[j]
+			if math.Abs(float64(firstDistance-secondDistance)) < float64(firstDistance+secondDistance)/2*0.05 {
+				result = firstDistance
+			}
+		}
 	}
 
-	log.Printf("Known distance rows = %v", differentDistances)
+	//log.Printf("Known distances: %v", differentDistances)
+
+	//log.Printf("result is: %d", result)
 
 	return
 }
