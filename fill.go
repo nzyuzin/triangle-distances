@@ -81,23 +81,30 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 	return
 }
 
-func calculateMissingDistance(distancesArray [][]int, row int, col int) (result int) {
+func calculateMissingDistance(distances [][]int, row int, col int) (result int) {
 	log.Printf("Calculating distance for [%d, %d]", row, col)
 
 	var differentDistances []int
 
-	for i := range distancesArray {
+	for i := range distances {
 		if i == row {
 			continue // distance should always be 0
 		}
 
-		distanceToSource := distancesArray[row][i]
-		distanceToAnother := distancesArray[col][i]
+		toSource := distances[row][i]
+		toAnother := distances[col][i]
 
-		if distanceToSource != -1 && distanceToAnother != -1 && distanceToSource-distanceToAnother > 200 {
+		goodEnough := float64(toSource)-float64(toAnother) > float64(toSource+toAnother)/2.0*0.05 // TODO: replace with function that calculates average and replace 5% (0.05) with meaningful constant
+
+		if toSource != -1 && toAnother != -1 && goodEnough {
 			differentDistances = append(differentDistances, i)
-			log.Printf("distances [%d, %d] = %d, [%d, %d] = %d", col, i, distanceToSource, row, i, distanceToAnother)
+			log.Printf("distances [%d, %d] = %d, [%d, %d] = %d", col, i, toSource, row, i, toAnother)
 		}
+	}
+	for i := range distances {
+		// TODO: find most common range of distances, i.e. distances within found
+		// range should occur most frequently in differentDistances
+		_ = i
 	}
 
 	log.Printf("Known distance rows = %v", differentDistances)
