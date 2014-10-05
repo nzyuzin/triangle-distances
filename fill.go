@@ -58,32 +58,15 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 	result = -1
 
 	for i := range distances {
-		toSource := distances[row][i]
-		toAnother := distances[col][i]
-		if i == row || toSource == -1 || toAnother == -1 {
-			continue
+		toSourceByRow := distances[row][i]
+		toAdjacentByRow := distances[col][i]
+		if toSourceByRow != -1 && toAdjacentByRow != -1 && differentEnough(toSourceByRow, toAdjacentByRow) {
+			differentDistances = append(differentDistances, toSourceByRow, toAdjacentByRow)
 		}
-
-		differentEnough := float64(toSource)-float64(toAnother) > float64(toSource+toAnother)/2.0*0.05 // TODO: replace with function that calculates average and replace 5% (0.05) with meaningful constant
-
-		if differentEnough {
-			differentDistances = append(differentDistances, toSource, toAnother)
-			//log.Printf("distances [%d, %d] = %d, [%d, %d] = %d", col, i, toSource, row, i, toAnother)
-		}
-	}
-
-	for i := range distances {
-		toSource := distances[i][row]
-		toAnother := distances[i][col]
-		if i == row || toSource == -1 || toAnother == -1 {
-			continue
-		}
-
-		differentEnough := float64(toSource)-float64(toAnother) > float64(toSource+toAnother)/2.0*0.05 // TODO: replace with function that calculates average and replace 5% (0.05) with meaningful constant
-
-		if differentEnough {
-			differentDistances = append(differentDistances, toSource, toAnother)
-			//log.Printf("distances [%d, %d] = %d, [%d, %d] = %d", col, i, toSource, row, i, toAnother)
+		toSourceByCol := distances[i][row]
+		toAdjacentByCol := distances[i][col]
+		if toSourceByCol != -1 && toAdjacentByCol != -1 && differentEnough(toSourceByCol, toAdjacentByCol) {
+			differentDistances = append(differentDistances, toSourceByCol, toAdjacentByCol)
 		}
 	}
 
@@ -94,8 +77,8 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 			}
 			firstDistance := differentDistances[i]
 			secondDistance := differentDistances[j]
-			if math.Abs(float64(firstDistance-secondDistance)) < float64(firstDistance+secondDistance)/2*0.05 {
-				result = firstDistance
+			if differentEnough(firstDistance, secondDistance) {
+				return firstDistance
 			}
 		}
 	}
@@ -105,4 +88,8 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 	//log.Printf("result is: %d", result)
 
 	return
+}
+
+func differentEnough(firstNumber int, secondNumber int) bool {
+	return math.Abs(float64(firstNumber-secondNumber)) < float64(firstNumber+secondNumber)/2*0.05
 }
