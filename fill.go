@@ -91,5 +91,5 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 }
 
 func differentEnough(firstNumber int, secondNumber int) bool {
-	return math.Abs(float64(firstNumber-secondNumber)) < float64(firstNumber+secondNumber)/2*0.05
+	return math.Abs(float64(firstNumber-secondNumber)) > float64(firstNumber+secondNumber)/2*0.05
 }
