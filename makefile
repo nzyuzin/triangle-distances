@@ -2,24 +2,22 @@ CC=gcc
 GO=go build
 CFLAGS=-Wall
 DEBUGFLAGS=-D DEBUG
-SOURCE=unfill.c
-EXECUTABLE=unfill
-GOSOURCE=fill.go
-GOEXECUTABLE=fill
+UNFILL=unfill
+FILL=fill
+COMPARE=compare
+EXECUTABLES=$(FILL) $(UNFILL) $(COMPARE)
 
-all:
-	$(CC) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
-	$(GO) -o $(GOEXECUTABLE) $(GOSOURCE)
+all: c go
 
-debug:
-	$(CC) $(DEBUGFLAGS) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
-	$(GO) -o $(GOEXECUTABLE) $(GOSOURCE)
+cdebug:
+	$(CC) $(DEBUGFLAGS) $(CFLAGS) $(UNFILL).c -o $(UNFILL)
 
 c:
-	$(CC) $(DEBUGFLAGS) $(CFLAGS) $(SOURCE) -o $(EXECUTABLE)
+	$(CC) $(CFLAGS) $(UNFILL).c -o $(UNFILL)
 
 go:
-	$(GO) -o $(GOEXECUTABLE) $(GOSOURCE)
+	$(GO) -o $(FILL) $(FILL).go
+	$(GO) -o $(COMPARE) $(COMPARE).go
 
 clean:
-	rm -rf $(EXECUTABLE) $(GOEXECUTABLE)
+	rm -rf $(EXECUTABLES)
