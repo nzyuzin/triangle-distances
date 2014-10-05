@@ -68,6 +68,6 @@ func main() {
 
 	fmt.Printf("couldn't guess %d numbers of %d, ratio is: %f\n", amountOfUknown, numbersInArray, float64(amountOfUknown)/float64(numbersInArray))
 	fmt.Printf("difference is: %0.2f\n", math.Sqrt(float64(sumOfSquareDifferences)))
-	fmt.Printf("average difference is: %f\n", averageDifference)
+	fmt.Printf("average difference is: %0.2f\n", averageDifference)
 	ioutil.PrintDistancesArray(differences)
 }
