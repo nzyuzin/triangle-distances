@@ -46,17 +46,25 @@ func main() {
 		differences[i] = make([]int, arrayWidth)
 	}
 
+	amountOfUknown := 0
+	var sumOfSquareDifferences int64 = 0
 	for i := 0; i < arrayWidth; i++ {
 		for j := 0; j < arrayWidth; j++ {
 			firstNumber := firstArray[i][j]
 			secondNumber := secondArray[i][j]
 			if firstNumber == -1 || secondNumber == -1 {
 				differences[i][j] = -1
+				amountOfUknown++
 			} else {
-				differences[i][j] = int(math.Abs(float64(firstNumber - secondNumber)))
+				difference := int(math.Abs(float64(firstNumber - secondNumber)))
+				differences[i][j] = difference
+				sumOfSquareDifferences += int64(difference * difference)
 			}
 		}
 	}
 
+	numbersInArray := arrayWidth * arrayWidth
+	fmt.Printf("couldn't guess %d numbers of %d, ratio is: %f\n", amountOfUknown, numbersInArray, float64(amountOfUknown)/float64(numbersInArray))
+	fmt.Printf("difference is: %0.2f\n", math.Sqrt(float64(sumOfSquareDifferences)))
 	ioutil.PrintDistancesArray(differences)
 }
