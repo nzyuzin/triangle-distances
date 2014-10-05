@@ -88,8 +88,6 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 	}
 
 	for i := range differentDistances {
-		// TODO: find most common range of distances, i.e. distances within found
-		// range should occur most frequently in differentDistances
 		for j := range differentDistances {
 			if j == i {
 				continue
