@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"ioutil"
 	"log"
 	"math"
 	"os"
@@ -26,48 +27,9 @@ func main() {
 
 	in := bufio.NewScanner(os.Stdin)
 
-	inputNumbers := readDistancesArray(resultDimension, *in)
+	inputNumbers := ioutil.ReadDistancesArray(resultDimension, *in)
 	fillingResult := fillMissingDistances(inputNumbers)
-	for i := 0; i < len(fillingResult); i++ {
-		for j := 0; j < len(fillingResult)-1; j++ {
-			processedDistance := fillingResult[i][j]
-			if processedDistance != -1 {
-				fmt.Printf("%d\t", processedDistance)
-			} else {
-				fmt.Printf("?\t")
-			}
-		}
-		fmt.Printf("%d\n", fillingResult[i][len(fillingResult)-1])
-	}
-}
-
-func readDistancesArray(size int, input bufio.Scanner) (result [][]int) {
-	var inputDistance string
-	result = make([][]int, size)
-	for i := range result {
-		result[i] = make([]int, size)
-	}
-	amountOfNumbers := 0
-	var convError error
-
-	input.Split(bufio.ScanWords)
-
-	for input.Scan() {
-		inputDistance = input.Text()
-		col := amountOfNumbers % size
-		row := amountOfNumbers / size
-		if inputDistance == "?" {
-			result[row][col] = -1
-		} else {
-			result[row][col], convError = strconv.Atoi(inputDistance)
-		}
-		if convError != nil {
-			log.Fatal(convError)
-		}
-		amountOfNumbers++
-	}
-	//log.Printf("read %d words\n", amountOfNumbers)
-	return
+	ioutil.PrintDistancesArray(fillingResult)
 }
 
 func fillMissingDistances(distancesArray [][]int) (result [][]int) {
@@ -98,6 +60,21 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 	for i := range distances {
 		toSource := distances[row][i]
 		toAnother := distances[col][i]
+		if i == row || toSource == -1 || toAnother == -1 {
+			continue
+		}
+
+		differentEnough := float64(toSource)-float64(toAnother) > float64(toSource+toAnother)/2.0*0.05 // TODO: replace with function that calculates average and replace 5% (0.05) with meaningful constant
+
+		if differentEnough {
+			differentDistances = append(differentDistances, toSource, toAnother)
+			//log.Printf("distances [%d, %d] = %d, [%d, %d] = %d", col, i, toSource, row, i, toAnother)
+		}
+	}
+
+	for i := range distances {
+		toSource := distances[i][row]
+		toAnother := distances[i][col]
 		if i == row || toSource == -1 || toAnother == -1 {
 			continue
 		}
