@@ -2,22 +2,45 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 void printHelp(char*);
 void printUsage(char*);
 
 int main(int argc, char** argv) {
-  if (argc != 3
-      || strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0) {
-#ifdef DEBUG
-    printf("incorrect input: argc = %d\n", argc);
-#endif
-    printHelp(argv[0]);
+  int fFilled = 0, sFilled = 0;
+  int triangular = 0;
+  int arraySize;
+  float fillingPercentage;
+  int c;
+  while ((c = getopt (argc, argv, "s:f:ht")) != -1) {
+    switch (c) {
+      case 's':
+        arraySize = atoi(strdup(optarg));
+        sFilled = 1;
+        break;
+      case 'f':
+        fillingPercentage = atof(strdup(optarg));
+        fFilled = 1;
+        break;
+      case 't':
+        triangular = 1;
+        break;
+      case 'h':
+        printHelp(argv[0]);
+        return 0;
+      case '?':
+      default:
+          printUsage(argv[0]);
+          return 1;
+    }
+  }
+
+  if (!sFilled || !fFilled) {
+    printUsage(argv[0]);
     return 1;
   }
 
-  int arraySize = atoi(argv[1]);
-  float fillingPercentage = atof(argv[2]);
 #ifdef DEBUG
   printf("passed parameters = %d, %f\n", arraySize, fillingPercentage);
 #endif
@@ -28,9 +51,13 @@ int main(int argc, char** argv) {
   srand(time(NULL));
 
   float fillChance;
+  int row, col;
   while (scanf("%d", &number) != EOF) {
+    row = amountOfNumbers / arraySize;
+    col = amountOfNumbers % arraySize;
+
     fillChance = rand() % 101 / 100.0;
-    if (fillingPercentage < 1.0 - fillChance) {
+    if ((fillingPercentage < 1.0 - fillChance) || (triangular && row > col)) {
       printf("?");
     } else {
       printf("%d", number);
@@ -55,7 +82,7 @@ int main(int argc, char** argv) {
 }
 
 void printUsage(char* commandName) {
-  printf("Usage: %s [array size] [filling percentage]\n", commandName);
+  printf("Usage: %s [-t] -s [array size] -f [filling percentage]\n", commandName);
 }
 
 void printHelp(char* commandName) {
