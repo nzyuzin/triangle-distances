@@ -74,7 +74,7 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 	var differentDistances []int
 	result = -1
 
-	for i := range distances {
+	for i := range distances { // FIXME: this loop doesn't consider that matrix can be upper-triangular
 		toSourceByRow := distances[row][i]
 		toAdjacentByRow := distances[col][i]
 		if toSourceByRow != -1 && toAdjacentByRow != -1 && differentEnough(toSourceByRow, toAdjacentByRow) {
