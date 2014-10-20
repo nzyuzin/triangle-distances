@@ -1,0 +1,4 @@
+Data in this folder consist of 100x100 array of numbers that represent
+distances.
+
+Distances here are inverted, i.e. 10000 represents exact match.
