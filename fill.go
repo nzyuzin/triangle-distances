@@ -22,6 +22,10 @@ func (distance Distance) isKnown() bool {
 	return distance.value != -1
 }
 
+func (first Distance) differentFrom(second Distance) bool {
+	return math.Abs(float64(first.value-second.value)) > float64(first.value+second.value)/2*0.05
+}
+
 func main() {
 	var arraySize int
 	flag.IntVar(&arraySize, "s", -1, "Array dimension length")
@@ -81,15 +85,20 @@ func fillMissingDistances(distancesArray [][]Distance) (result [][]int) {
 			initJ = 0
 		}
 		for j := initJ; j < len(distancesArray); j++ {
-			var newDistance int
+			var newDistance Distance
+			var levelOfTrust int
 			if !distancesArray[i][j].isKnown() {
 				newDistance = calculateMissingDistance(distancesArray, i, j)
+				levelOfTrust = newDistance.levelOfTrust + 1
 			} else {
-				newDistance = distancesArray[i][j].value
+				newDistance = distancesArray[i][j]
+				levelOfTrust = newDistance.levelOfTrust
 			}
-			result[i][j] = newDistance
+			result[i][j] = newDistance.value
+			distancesArray[i][j].levelOfTrust = levelOfTrust
 			if triangular {
-				result[j][i] = newDistance
+				result[j][i] = newDistance.value
+				distancesArray[j][i].levelOfTrust = levelOfTrust
 			}
 		}
 	}
@@ -97,55 +106,50 @@ func fillMissingDistances(distancesArray [][]Distance) (result [][]int) {
 	return
 }
 
-func calculateMissingDistance(distances [][]Distance, row int, col int) (result int) {
+func calculateMissingDistance(distances [][]Distance, row int, col int) Distance {
 	if DEBUG {
 		log.Printf("Calculating distance for [%d, %d]", row, col)
 	}
 
 	if row == col {
-		return 0 // We assume that distance between same objects is 0
+		return Distance{0, 0} // We assume that distance between same objects is 0
 	}
 
 	var differentDistances []Distance
-	result = -1
 
 	for i := range distances { // FIXME: this loop doesn't consider that matrix can be upper-triangular
 		toSourceByRow := distances[row][i]
 		toAdjacentByRow := distances[col][i]
-		if toSourceByRow.isKnown() && toAdjacentByRow.isKnown() && differentEnough(toSourceByRow, toAdjacentByRow) {
+		if toSourceByRow.isKnown() && toAdjacentByRow.isKnown() && toSourceByRow.differentFrom(toAdjacentByRow) {
 			differentDistances = append(differentDistances, toSourceByRow, toAdjacentByRow)
 		}
 		toSourceByCol := distances[i][row]
 		toAdjacentByCol := distances[i][col]
-		if toSourceByCol.isKnown() && toAdjacentByCol.isKnown() && differentEnough(toSourceByCol, toAdjacentByCol) {
+		if toSourceByCol.isKnown() && toAdjacentByCol.isKnown() && toSourceByCol.differentFrom(toAdjacentByCol) {
 			differentDistances = append(differentDistances, toSourceByCol, toAdjacentByCol)
 		}
 	}
 
+	return findBestGuess(differentDistances)
+}
+
+func findBestGuess(distances []Distance) Distance {
 	if DEBUG {
-		log.Printf("Known distances: %v", differentDistances)
+		log.Printf("Known distances: %v", distances)
 	}
 
-	for i := range differentDistances {
-		for j := range differentDistances {
+	for i := range distances {
+		for j := range distances {
 			if j == i { // TODO: clever data partitioning is needed for this type of guessing
 				continue
 			}
-			firstDistance := differentDistances[i]
-			secondDistance := differentDistances[j]
-			if differentEnough(firstDistance, secondDistance) {
-				return firstDistance.value
+			firstDistance := distances[i]
+			secondDistance := distances[j]
+			if firstDistance.differentFrom(secondDistance) {
+				return firstDistance
 			}
 		}
 	}
 
-	if DEBUG {
-		log.Printf("result is: %d", result)
-	}
-
-	return
-}
-
-func differentEnough(first Distance, second Distance) bool {
-	return math.Abs(float64(first.value-second.value)) > float64(first.value+second.value)/2*0.05
+	return Distance{-1, -1}
 }
