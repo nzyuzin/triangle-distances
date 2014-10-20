@@ -5,7 +5,8 @@ DEBUGFLAGS=-D DEBUG
 UNFILL=unfill
 FILL=fill
 COMPARE=compare
-EXECUTABLES=$(FILL) $(UNFILL) $(COMPARE)
+NORMALIZE=normalize
+EXECUTABLES=$(FILL) $(UNFILL) $(COMPARE) $(NORMALIZE)
 
 all: c go
 
@@ -18,6 +19,7 @@ c:
 go:
 	$(GO) -o $(FILL) $(FILL).go
 	$(GO) -o $(COMPARE) $(COMPARE).go
+	$(GO) -o $(NORMALIZE) $(NORMALIZE).go
 
 clean:
 	rm -rf $(EXECUTABLES)
