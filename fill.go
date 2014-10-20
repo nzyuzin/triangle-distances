@@ -134,8 +134,16 @@ func calculateMissingDistance(distances [][]Distance, row int, col int) Distance
 }
 
 func findBestGuess(distances []Distance) Distance {
+	if len(distances) == 0 {
+		return Distance{-1, -1}
+	}
+
 	if DEBUG {
 		log.Printf("Known distances: %v", distances)
+	}
+	equivalentDistances := make([]int, len(distances))
+	for i := range equivalentDistances {
+		equivalentDistances[i] = i
 	}
 
 	for i := range distances {
@@ -145,11 +153,34 @@ func findBestGuess(distances []Distance) Distance {
 			}
 			firstDistance := distances[i]
 			secondDistance := distances[j]
-			if firstDistance.differentFrom(secondDistance) {
-				return firstDistance
+			if !firstDistance.differentFrom(secondDistance) {
+				equivalentDistances[j] = equivalentDistances[i]
 			}
 		}
 	}
 
-	return Distance{-1, -1}
+	amountOfEquivalent := make([]int, len(distances))
+	for i := range amountOfEquivalent {
+		amountOfEquivalent[i] = 1
+	}
+
+	for i := range equivalentDistances {
+		amountOfEquivalent[equivalentDistances[i]] += 1
+	}
+
+	max := 0
+	for i := range amountOfEquivalent {
+		if amountOfEquivalent[i] > amountOfEquivalent[max] {
+			max = i
+		}
+	}
+
+	result := 0
+	for i := range equivalentDistances {
+		if equivalentDistances[i] == max {
+			result += distances[i].value / amountOfEquivalent[max]
+		}
+	}
+
+	return Distance{result, distances[max].levelOfTrust}
 }
