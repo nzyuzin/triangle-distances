@@ -10,6 +10,8 @@ import (
 	"strconv"
 )
 
+const DEBUG bool = false
+
 func printUsage(commandName string) {
 	fmt.Printf("Usage: %s [array dimension length]\n", commandName)
 }
@@ -52,7 +54,13 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 }
 
 func calculateMissingDistance(distances [][]int, row int, col int) (result int) {
-	//log.Printf("Calculating distance for [%d, %d]", row, col)
+	if DEBUG {
+		log.Printf("Calculating distance for [%d, %d]", row, col)
+	}
+
+	if row == col {
+		return 0 // We assume that distance between same objects is 0
+	}
 
 	var differentDistances []int
 	result = -1
@@ -70,6 +78,10 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 		}
 	}
 
+	if DEBUG {
+		log.Printf("Known distances: %v", differentDistances)
+	}
+
 	for i := range differentDistances {
 		for j := range differentDistances {
 			if j == i {
@@ -83,9 +95,9 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 		}
 	}
 
-	//log.Printf("Known distances: %v", differentDistances)
-
-	//log.Printf("result is: %d", result)
+	if DEBUG {
+		log.Printf("result is: %d", result)
+	}
 
 	return
 }
