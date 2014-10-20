@@ -13,6 +13,15 @@ const DEBUG bool = false
 
 var triangular bool
 
+type Distance struct {
+	value        int
+	levelOfTrust int
+}
+
+func (distance Distance) isKnown() bool {
+	return distance.value != -1
+}
+
 func main() {
 	var arraySize int
 	flag.IntVar(&arraySize, "s", -1, "Array dimension length")
@@ -28,11 +37,37 @@ func main() {
 	in := bufio.NewScanner(os.Stdin)
 
 	inputNumbers := ioutil.ReadDistancesArray(arraySize, *in)
-	fillingResult := fillMissingDistances(inputNumbers)
+	distances := buildDistancesArray(inputNumbers)
+	fillingResult := fillMissingDistances(distances)
 	ioutil.PrintDistancesArray(fillingResult)
 }
 
-func fillMissingDistances(distancesArray [][]int) (result [][]int) {
+func buildDistancesArray(distancesArray [][]int) (result [][]Distance) {
+	result = make([][]Distance, len(distancesArray))
+	for i := range result {
+		result[i] = make([]Distance, len(distancesArray))
+	}
+
+	for i := range distancesArray {
+		for j := range distancesArray {
+			result[i][j] = buildDistance(distancesArray[i][j])
+		}
+	}
+
+	return
+}
+
+func buildDistance(distance int) (result Distance) {
+	result.value = distance
+	if distance == -1 {
+		result.levelOfTrust = -1
+	} else {
+		result.levelOfTrust = 0
+	}
+	return
+}
+
+func fillMissingDistances(distancesArray [][]Distance) (result [][]int) {
 	result = make([][]int, len(distancesArray))
 	for i := range result {
 		result[i] = make([]int, len(distancesArray))
@@ -47,10 +82,10 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 		}
 		for j := initJ; j < len(distancesArray); j++ {
 			var newDistance int
-			if distancesArray[i][j] == -1 {
+			if !distancesArray[i][j].isKnown() {
 				newDistance = calculateMissingDistance(distancesArray, i, j)
 			} else {
-				newDistance = distancesArray[i][j]
+				newDistance = distancesArray[i][j].value
 			}
 			result[i][j] = newDistance
 			if triangular {
@@ -62,7 +97,7 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 	return
 }
 
-func calculateMissingDistance(distances [][]int, row int, col int) (result int) {
+func calculateMissingDistance(distances [][]Distance, row int, col int) (result int) {
 	if DEBUG {
 		log.Printf("Calculating distance for [%d, %d]", row, col)
 	}
@@ -71,18 +106,18 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 		return 0 // We assume that distance between same objects is 0
 	}
 
-	var differentDistances []int
+	var differentDistances []Distance
 	result = -1
 
 	for i := range distances { // FIXME: this loop doesn't consider that matrix can be upper-triangular
 		toSourceByRow := distances[row][i]
 		toAdjacentByRow := distances[col][i]
-		if toSourceByRow != -1 && toAdjacentByRow != -1 && differentEnough(toSourceByRow, toAdjacentByRow) {
+		if toSourceByRow.isKnown() && toAdjacentByRow.isKnown() && differentEnough(toSourceByRow, toAdjacentByRow) {
 			differentDistances = append(differentDistances, toSourceByRow, toAdjacentByRow)
 		}
 		toSourceByCol := distances[i][row]
 		toAdjacentByCol := distances[i][col]
-		if toSourceByCol != -1 && toAdjacentByCol != -1 && differentEnough(toSourceByCol, toAdjacentByCol) {
+		if toSourceByCol.isKnown() && toAdjacentByCol.isKnown() && differentEnough(toSourceByCol, toAdjacentByCol) {
 			differentDistances = append(differentDistances, toSourceByCol, toAdjacentByCol)
 		}
 	}
@@ -99,7 +134,7 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 			firstDistance := differentDistances[i]
 			secondDistance := differentDistances[j]
 			if differentEnough(firstDistance, secondDistance) {
-				return firstDistance
+				return firstDistance.value
 			}
 		}
 	}
@@ -111,6 +146,6 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 	return
 }
 
-func differentEnough(firstNumber int, secondNumber int) bool {
-	return math.Abs(float64(firstNumber-secondNumber)) > float64(firstNumber+secondNumber)/2*0.05
+func differentEnough(first Distance, second Distance) bool {
+	return math.Abs(float64(first.value-second.value)) > float64(first.value+second.value)/2*0.05
 }
