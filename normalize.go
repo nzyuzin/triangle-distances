@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"ioutil"
 	"log"
 	"os"
@@ -10,7 +9,7 @@ import (
 )
 
 func printUsage(commandName string) {
-	fmt.Printf("Usage: %s [array dimension length]\n, [subtrahend]", commandName)
+	log.Fatal("Usage: %s [array dimension length] [subtrahend]\n", commandName)
 }
 
 func main() {
