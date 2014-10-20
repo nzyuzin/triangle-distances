@@ -2,34 +2,32 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"flag"
 	"ioutil"
 	"log"
 	"math"
 	"os"
-	"strconv"
 )
 
 const DEBUG bool = false
 
-func printUsage(commandName string) {
-	fmt.Printf("Usage: %s [array dimension length]\n", commandName)
-}
+var triangular bool
 
 func main() {
-	if len(os.Args) != 2 {
-		printUsage(os.Args[0])
-		os.Exit(1)
-	}
-	resultDimension, convError := strconv.Atoi(os.Args[1])
+	var arraySize int
+	flag.IntVar(&arraySize, "s", -1, "Array dimension length")
+	flag.BoolVar(&triangular, "t", false, `Specifies if input array should be
+	treated like upper-triangular matrix`)
+	flag.Parse()
 
-	if convError != nil {
-		log.Fatal(convError)
+	if arraySize < 0 {
+		flag.Usage()
+		os.Exit(1)
 	}
 
 	in := bufio.NewScanner(os.Stdin)
 
-	inputNumbers := ioutil.ReadDistancesArray(resultDimension, *in)
+	inputNumbers := ioutil.ReadDistancesArray(arraySize, *in)
 	fillingResult := fillMissingDistances(inputNumbers)
 	ioutil.PrintDistancesArray(fillingResult)
 }
@@ -41,11 +39,22 @@ func fillMissingDistances(distancesArray [][]int) (result [][]int) {
 	}
 
 	for i := range distancesArray {
-		for j := range distancesArray[i] {
+		var initJ int
+		if triangular {
+			initJ = i
+		} else {
+			initJ = 0
+		}
+		for j := initJ; j < len(distancesArray); j++ {
+			var newDistance int
 			if distancesArray[i][j] == -1 {
-				result[i][j] = calculateMissingDistance(distancesArray, i, j)
+				newDistance = calculateMissingDistance(distancesArray, i, j)
 			} else {
-				result[i][j] = distancesArray[i][j]
+				newDistance = distancesArray[i][j]
+			}
+			result[i][j] = newDistance
+			if triangular {
+				result[j][i] = newDistance
 			}
 		}
 	}
@@ -84,7 +93,7 @@ func calculateMissingDistance(distances [][]int, row int, col int) (result int) 
 
 	for i := range differentDistances {
 		for j := range differentDistances {
-			if j == i {
+			if j == i { // TODO: clever data partitioning is needed for this type of guessing
 				continue
 			}
 			firstDistance := differentDistances[i]
