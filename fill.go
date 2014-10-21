@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-const DEBUG bool = false
+var DEBUG bool
 
 var triangular bool
 
@@ -31,6 +31,7 @@ func main() {
 	flag.IntVar(&arraySize, "s", -1, "Array dimension length")
 	flag.BoolVar(&triangular, "t", false, `Specifies if input array should be
 	treated like upper-triangular matrix`)
+	flag.BoolVar(&DEBUG, "d", false, "Enables debug logging")
 	flag.Parse()
 
 	if arraySize < 0 {
