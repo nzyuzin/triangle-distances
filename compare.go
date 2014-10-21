@@ -2,28 +2,25 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"flag"
 	"ioutil"
 	"log"
 	"math"
 	"os"
-	"strconv"
 )
 
-func printUsage(commandName string) {
-	fmt.Printf("Usage: %s [array dimension length] [first array file]\n", commandName)
-}
+var DEBUG bool
 
 func main() {
-	if len(os.Args) != 3 {
-		printUsage(os.Args[0])
-		os.Exit(1)
-	}
-	arrayWidth, convError := strconv.Atoi(os.Args[1])
-	fileName := os.Args[2]
+	var arrayWidth int
+	flag.IntVar(&arrayWidth, "s", -1, "Array dimension length")
+	flag.BoolVar(&DEBUG, "d", false, "Enables debug logging")
+	flag.Parse()
+	fileName := flag.Args()[0]
 
-	if convError != nil {
-		log.Fatal(convError)
+	if arrayWidth < 0 {
+		flag.Usage()
+		os.Exit(1)
 	}
 
 	file, err := os.Open(fileName)
@@ -50,6 +47,8 @@ func main() {
 	amountOfUknown := 0
 	var sumOfSquareDifferences int64 = 0
 	var averageDifference float64 = 0
+	var differentOnlyAverageDifference float64 = 0
+	var differentNumbersAmount int = 0
 	for i := 0; i < arrayWidth; i++ {
 		for j := 0; j < arrayWidth; j++ {
 			firstNumber := firstArray[i][j]
@@ -60,14 +59,25 @@ func main() {
 			} else {
 				difference := int(math.Abs(float64(firstNumber - secondNumber)))
 				differences[i][j] = difference
-				sumOfSquareDifferences += int64(difference * difference)
-				averageDifference += float64(difference) / float64(numbersInArray)
+				if DEBUG {
+					sumOfSquareDifferences += int64(difference * difference)
+					averageDifference += float64(difference) / float64(numbersInArray)
+					if difference != 0 {
+						differentOnlyAverageDifference += float64(difference)
+						differentNumbersAmount++
+					}
+				}
 			}
 		}
 	}
 
-	fmt.Printf("couldn't guess %d numbers out of %d, ratio is: %f\n", amountOfUknown, numbersInArray, float64(amountOfUknown)/float64(numbersInArray))
-	fmt.Printf("difference is: %0.2f\n", math.Sqrt(float64(sumOfSquareDifferences)))
-	fmt.Printf("average difference is: %0.2f\n", averageDifference)
+	if DEBUG {
+		differentOnlyAverageDifference /= float64(differentNumbersAmount)
+		log.Printf("couldn't guess %d numbers out of %d, ratio is: %f\n", amountOfUknown, numbersInArray, float64(amountOfUknown)/float64(numbersInArray))
+		log.Printf("different numbers amount is: %d", differentNumbersAmount)
+		log.Printf("difference is: %0.2f\n", math.Sqrt(float64(sumOfSquareDifferences)))
+		log.Printf("average difference is: %0.2f\n", averageDifference)
+		log.Printf("different numbers only average difference is: %0.2f\n", differentOnlyAverageDifference)
+	}
 	ioutil.PrintDistancesArray(differences)
 }
