@@ -108,12 +108,12 @@ func fillMissingDistances(distancesArray [][]Distance) (result [][]int) {
 }
 
 func calculateMissingDistance(distances [][]Distance, row int, col int) Distance {
-	if DEBUG {
-		log.Printf("Calculating distance for [%d, %d]", row, col)
-	}
-
 	if row == col {
 		return Distance{0, 0} // We assume that distance between same objects is 0
+	}
+
+	if DEBUG {
+		log.Printf("Calculating distance for [%d, %d]", row, col)
 	}
 
 	var differentDistances []Distance
@@ -159,7 +159,10 @@ func findBestGuess(distances []Distance) Distance {
 			}
 		}
 	}
+	return getMostCommonDistance(distances, equivalentDistances)
+}
 
+func getMostCommonDistance(distances []Distance, equivalentDistances []int) Distance {
 	amountOfEquivalent := make([]int, len(distances))
 	for i := range amountOfEquivalent {
 		amountOfEquivalent[i] = 1
@@ -181,6 +184,11 @@ func findBestGuess(distances []Distance) Distance {
 		if equivalentDistances[i] == max {
 			result += distances[i].value / amountOfEquivalent[max]
 		}
+	}
+
+	if DEBUG {
+		log.Printf("amountOfEquivalent = %v, equivalentDistances = %v, result = %d",
+			amountOfEquivalent, equivalentDistances, result)
 	}
 
 	return Distance{result, distances[max].levelOfTrust}
