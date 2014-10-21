@@ -96,9 +96,11 @@ func fillMissingDistances(distancesArray [][]Distance) (result [][]int) {
 				levelOfTrust = newDistance.levelOfTrust
 			}
 			result[i][j] = newDistance.value
+			distancesArray[i][j].value = newDistance.value
 			distancesArray[i][j].levelOfTrust = levelOfTrust
 			if triangular {
 				result[j][i] = newDistance.value
+				distancesArray[j][i].value = newDistance.value
 				distancesArray[j][i].levelOfTrust = levelOfTrust
 			}
 		}
@@ -136,6 +138,9 @@ func calculateMissingDistance(distances [][]Distance, row int, col int) Distance
 
 func findBestGuess(distances []Distance) Distance {
 	if len(distances) == 0 {
+		if DEBUG {
+			log.Printf("No different distances found")
+		}
 		return Distance{-1, -1}
 	}
 
@@ -165,7 +170,7 @@ func findBestGuess(distances []Distance) Distance {
 func getMostCommonDistance(distances []Distance, equivalentDistances []int) Distance {
 	amountOfEquivalent := make([]int, len(distances))
 	for i := range amountOfEquivalent {
-		amountOfEquivalent[i] = 1
+		amountOfEquivalent[i] = 0
 	}
 
 	for i := range equivalentDistances {
