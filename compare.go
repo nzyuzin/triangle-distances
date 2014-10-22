@@ -15,9 +15,12 @@ var DEBUG bool
 func main() {
 	var arrayWidth int
 	var threshold int
+	var triangular bool
 	flag.IntVar(&arrayWidth, "s", -1, "Array dimension length")
 	flag.BoolVar(&DEBUG, "d", false, "Enables debug logging")
-	flag.IntVar(&threshold, "t", -1, "Print distances which value exceeds given threshold. Negative value is ignored")
+	flag.BoolVar(&triangular, "t", false, `Specifies if input array should be
+	treated like upper-triangular matrix`)
+	flag.IntVar(&threshold, "td", -1, "Print distances which value exceeds given threshold. Negative value is ignored")
 	flag.Parse()
 	fileName := flag.Args()[0]
 
@@ -46,7 +49,12 @@ func main() {
 		differences[i] = make([]int, arrayWidth)
 	}
 
-	numbersInArray := arrayWidth * arrayWidth
+	var numbersInArray int
+	if triangular {
+		numbersInArray = arrayWidth * (arrayWidth - 1) / 2
+	} else {
+		numbersInArray = arrayWidth * arrayWidth
+	}
 	amountOfUknown := 0
 	var sumOfSquareDifferences int64 = 0
 	var averageDifference float64 = 0
@@ -54,6 +62,9 @@ func main() {
 	var differentNumbersAmount int = 0
 	for i := 0; i < arrayWidth; i++ {
 		for j := 0; j < arrayWidth; j++ {
+			if triangular && i >= j {
+				continue
+			}
 			firstNumber := firstArray[i][j]
 			secondNumber := secondArray[i][j]
 			if firstNumber == -1 || secondNumber == -1 {
