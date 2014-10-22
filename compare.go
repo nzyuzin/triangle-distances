@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"ioutil"
 	"log"
 	"math"
@@ -13,8 +14,10 @@ var DEBUG bool
 
 func main() {
 	var arrayWidth int
+	var threshold int
 	flag.IntVar(&arrayWidth, "s", -1, "Array dimension length")
 	flag.BoolVar(&DEBUG, "d", false, "Enables debug logging")
+	flag.IntVar(&threshold, "t", -1, "Print distances which value exceeds given threshold. Negative value is ignored")
 	flag.Parse()
 	fileName := flag.Args()[0]
 
@@ -58,6 +61,12 @@ func main() {
 				amountOfUknown++
 			} else {
 				difference := int(math.Abs(float64(firstNumber - secondNumber)))
+
+				if threshold >= 0 && difference > threshold {
+					fmt.Printf("[%d, %d] = %d\n", i, j, difference)
+					continue
+				}
+
 				differences[i][j] = difference
 				if DEBUG {
 					sumOfSquareDifferences += int64(difference * difference)
@@ -69,6 +78,10 @@ func main() {
 				}
 			}
 		}
+	}
+
+	if threshold >= 0 {
+		os.Exit(0)
 	}
 
 	if DEBUG {
