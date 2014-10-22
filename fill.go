@@ -152,14 +152,9 @@ func findBestGuess(distances []Distance) Distance {
 		equivalentDistances[i] = i
 	}
 
-	for i := range distances {
-		for j := range distances {
-			if j == i {
-				continue
-			}
-			firstDistance := distances[i]
-			secondDistance := distances[j]
-			if !firstDistance.differentFrom(secondDistance) {
+	for i := 0; i < len(distances)-1; i++ {
+		for j := i + 1; j < len(distances); j++ {
+			if !distances[i].differentFrom(distances[j]) {
 				equivalentDistances[j] = equivalentDistances[i]
 			}
 		}
