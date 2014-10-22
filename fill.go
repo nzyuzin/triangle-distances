@@ -154,7 +154,7 @@ func findBestGuess(distances []Distance) Distance {
 
 	for i := range distances {
 		for j := range distances {
-			if j == i { // TODO: clever data partitioning is needed for this type of guessing
+			if j == i {
 				continue
 			}
 			firstDistance := distances[i]
