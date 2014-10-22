@@ -86,22 +86,14 @@ func fillMissingDistances(distancesArray [][]Distance) (result [][]int) {
 			initJ = 0
 		}
 		for j := initJ; j < len(distancesArray); j++ {
-			var newDistance Distance
-			var levelOfTrust int
 			if !distancesArray[i][j].isKnown() {
-				newDistance = calculateMissingDistance(distancesArray, i, j)
-				levelOfTrust = newDistance.levelOfTrust + 1
-			} else {
-				newDistance = distancesArray[i][j]
-				levelOfTrust = newDistance.levelOfTrust
+				distancesArray[i][j] = calculateMissingDistance(distancesArray, i, j)
+				distancesArray[i][j].levelOfTrust += 1
 			}
-			result[i][j] = newDistance.value
-			distancesArray[i][j].value = newDistance.value
-			distancesArray[i][j].levelOfTrust = levelOfTrust
+			result[i][j] = distancesArray[i][j].value
 			if triangular {
-				result[j][i] = newDistance.value
-				distancesArray[j][i].value = newDistance.value
-				distancesArray[j][i].levelOfTrust = levelOfTrust
+				result[j][i] = distancesArray[i][j].value
+				distancesArray[j][i] = distancesArray[i][j]
 			}
 		}
 	}
