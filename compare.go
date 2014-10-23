@@ -35,8 +35,8 @@ func main() {
 		panic(err)
 	}
 
-	firstArray := ioutil.ReadDistancesArray(arrayWidth, *bufio.NewScanner(os.Stdin))
-	secondArray := ioutil.ReadDistancesArray(arrayWidth, *bufio.NewScanner(file))
+	sourceArray := ioutil.ReadDistancesArray(arrayWidth, *bufio.NewScanner(file))
+	comparedArray := ioutil.ReadDistancesArray(arrayWidth, *bufio.NewScanner(os.Stdin))
 
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -65,16 +65,16 @@ func main() {
 			if triangular && i >= j {
 				continue
 			}
-			firstNumber := firstArray[i][j]
-			secondNumber := secondArray[i][j]
-			if firstNumber == -1 || secondNumber == -1 {
+			source := sourceArray[i][j]
+			compared := comparedArray[i][j]
+			if source == -1 || compared == -1 {
 				differences[i][j] = -1
 				amountOfUknown++
 			} else {
-				difference := int(math.Abs(float64(firstNumber - secondNumber)))
+				difference := int(math.Abs(float64(source - compared)))
 
 				if threshold >= 0 && difference > threshold {
-					fmt.Printf("[%d, %d] = %d\n", i, j, difference)
+					fmt.Printf("[%d, %d] source = %d, compared = %d, difference = %d\n", i, j, source, compared, difference)
 					continue
 				}
 
