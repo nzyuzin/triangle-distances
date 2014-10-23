@@ -23,7 +23,7 @@ func (distance Distance) isKnown() bool {
 }
 
 func (first Distance) differentFrom(second Distance) bool {
-	return math.Abs(float64(first.value-second.value)) > float64(first.value+second.value)/2*0.05
+	return math.Abs(float64(first.value-second.value)) > float64(first.value+second.value)/2*0.08
 }
 
 func main() {
@@ -112,12 +112,15 @@ func calculateMissingDistance(distances [][]Distance, row int, col int) Distance
 
 	var differentDistances []Distance
 
-	for i := range distances { // FIXME: this loop doesn't consider that matrix can be upper-triangular
+	for i := max(row, col); i < len(distances); i++ {
 		toSourceByRow := distances[row][i]
 		toAdjacentByRow := distances[col][i]
 		if toSourceByRow.isKnown() && toAdjacentByRow.isKnown() && toSourceByRow.differentFrom(toAdjacentByRow) {
 			differentDistances = append(differentDistances, toSourceByRow, toAdjacentByRow)
 		}
+	}
+
+	for i := 0; i < max(row, col); i++ {
 		toSourceByCol := distances[i][row]
 		toAdjacentByCol := distances[i][col]
 		if toSourceByCol.isKnown() && toAdjacentByCol.isKnown() && toSourceByCol.differentFrom(toAdjacentByCol) {
@@ -126,6 +129,10 @@ func calculateMissingDistance(distances [][]Distance, row int, col int) Distance
 	}
 
 	return findBestGuess(differentDistances)
+}
+
+func max(f int, s int) int {
+	return int(math.Max(float64(f), float64(s)))
 }
 
 func findBestGuess(distances []Distance) Distance {
