@@ -99,7 +99,7 @@ func main() {
 		differentOnlyAverageDifference /= float64(differentNumbersAmount)
 		log.Printf("couldn't guess %d numbers out of %d, ratio is: %f\n", amountOfUknown, numbersInArray, float64(amountOfUknown)/float64(numbersInArray))
 		log.Printf("different numbers amount is: %d", differentNumbersAmount)
-		log.Printf("difference is: %0.2f\n", math.Sqrt(float64(sumOfSquareDifferences)))
+		log.Printf("difference is: %0.2f\n", math.Sqrt(float64(sumOfSquareDifferences/int64(numbersInArray))))
 		log.Printf("average difference is: %0.2f\n", averageDifference)
 		log.Printf("different numbers only average difference is: %0.2f\n", differentOnlyAverageDifference)
 	}
