@@ -1,0 +1,7 @@
+!testdata/given/*
+testdata/**/*.txt
+test.*
+compare
+fill
+unfill
+normalize
