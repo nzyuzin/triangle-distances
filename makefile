@@ -6,7 +6,8 @@ UNFILL=unfill
 FILL=fill
 COMPARE=compare
 NORMALIZE=normalize
-EXECUTABLES=$(FILL) $(UNFILL) $(COMPARE) $(NORMALIZE)
+BADNESS=badness
+EXECUTABLES=$(FILL) $(UNFILL) $(COMPARE) $(NORMALIZE) $(BADNESS)
 
 all: c go
 
@@ -20,6 +21,7 @@ go:
 	$(GO) -o $(FILL) $(FILL).go
 	$(GO) -o $(COMPARE) $(COMPARE).go
 	$(GO) -o $(NORMALIZE) $(NORMALIZE).go
+	$(GO) -o $(BADNESS) $(BADNESS).go
 
 clean:
 	rm -rf $(EXECUTABLES)
