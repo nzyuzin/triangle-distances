@@ -58,21 +58,22 @@ func main() {
 		}
 	}
 
-	fmt.Printf("%f", averageBadness/amountOfTriangles)
+	fmt.Printf("%f\n", averageBadness/amountOfTriangles)
 
 }
 
-// FIXME: generalize
 func max(f int, s int, t int) int {
-	ff := float64(f)
-	fs := float64(s)
-	ft := float64(t)
-	return int(math.Max(math.Max(ff, fs), ft))
+	intMax := floatFuncToIntFunc(math.Max)
+	return intMax(intMax(f, s), t)
 }
 
 func min(f int, s int, t int) int {
-	ff := float64(f)
-	fs := float64(s)
-	ft := float64(t)
-	return int(math.Min(math.Min(ff, fs), ft))
+	intMin := floatFuncToIntFunc(math.Min)
+	return intMin(intMin(f, s), t)
+}
+
+func floatFuncToIntFunc(fn func(float64, float64) float64) func(int, int) int {
+	return func(a int, b int) int {
+		return int(fn(float64(a), float64(b)))
+	}
 }
