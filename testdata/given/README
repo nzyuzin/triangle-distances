@@ -1,4 +1,4 @@
-Data in this folder consist of 100x100 array of numbers that represent
-distances.
+Data in this folder consists of 100x100 array of numbers that represent
+distances (differences) between elements denoted by column/row indexes.
 
 Distances here are inverted, i.e. 10000 represents exact match.
