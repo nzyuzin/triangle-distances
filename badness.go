@@ -11,6 +11,28 @@ import (
 
 var DEBUG bool
 
+// a, b, c -- sides
+// alpha, beta, gamma -- angles (radians) opposite to corresponding side
+// a: alpha, b: beta, c: gamma
+type Triangle struct {
+	a, b, c            int
+	alpha, beta, gamma float64
+}
+
+func BuildTriangle(a int, b int, c int) Triangle {
+	return Triangle{a, b, c,
+		getAngle(a, b, c), getAngle(b, a, c), getAngle(c, a, b)}
+}
+
+func getAngle(toSide int, oneSide int, anotherSide int) float64 {
+	return math.Acos(float64(square(oneSide)+square(anotherSide)-square(toSide)) /
+		float64(2*oneSide*anotherSide))
+}
+
+func square(x int) int {
+	return x * x
+}
+
 func main() {
 	var arrayWidth int
 	var triangular bool
@@ -27,6 +49,14 @@ func main() {
 
 	distancesArray := ioutil.ReadDistancesArray(arrayWidth, *bufio.NewScanner(os.Stdin))
 
+	fmt.Printf("%f\n", ComputeBadness(distancesArray, arrayWidth, triangular, badness))
+}
+
+func badness(triangle Triangle) float64 {
+	return float64(triangle.a-triangle.b) / float64(triangle.a)
+}
+
+func ComputeBadness(distancesArray [][]int, arrayWidth int, triangular bool, getBadness func(Triangle) float64) float64 {
 	var averageBadness float64 = 0
 	var amountOfTriangles float64 = 0
 
@@ -50,16 +80,15 @@ func main() {
 				c := min(firstSide, secondSide, thirdSide)
 				b := firstSide + secondSide + thirdSide - a - c
 
-				// FIXME: pass different badnesses as a function
-				badness := (float64(a) - float64(b)) / float64(a)
+				triangle := BuildTriangle(a, b, c)
+				badness := getBadness(triangle)
 				averageBadness += badness
 				amountOfTriangles++
 			}
 		}
 	}
 
-	fmt.Printf("%f\n", averageBadness/amountOfTriangles)
-
+	return averageBadness / amountOfTriangles
 }
 
 func max(f int, s int, t int) int {
