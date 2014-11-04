@@ -20,6 +20,7 @@ type Triangle struct {
 }
 
 func BuildTriangle(a int, b int, c int) Triangle {
+	// TODO: return error if triangle inequality doesn't hold
 	return Triangle{a, b, c,
 		getAngle(a, b, c), getAngle(b, a, c), getAngle(c, a, b)}
 }
