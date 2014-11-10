@@ -70,17 +70,10 @@ func ComputeBadness(distancesArray [][]int, arrayWidth int, triangular bool, get
 	var triangleInequalityViolations int = 0
 
 	for i := 0; i < arrayWidth; i++ {
-		for j := 0; j < arrayWidth; j++ {
-			if triangular && i >= j {
-				continue
-			}
-			for k := 0; k < arrayWidth; k++ {
+		for j := i + 1; j < arrayWidth; j++ {
+			for k := j + 1; k < arrayWidth; k++ {
 
-				if i == j || j == k || i == k { // FIXME: ugly hack
-					continue
-				}
-
-				// FIXME: triangular matrix isn't considered
+				// FIXME: non triangular matrix isn't considered
 				firstSide := distancesArray[i][j]
 				secondSide := distancesArray[i][k]
 				thirdSide := distancesArray[j][k]
@@ -102,6 +95,9 @@ func ComputeBadness(distancesArray [][]int, arrayWidth int, triangular bool, get
 				amountOfTriangles++
 			}
 		}
+	}
+	if DEBUG {
+		log.Printf("amountOfTriangles = %f", amountOfTriangles)
 	}
 
 	return averageBadness / amountOfTriangles, triangleInequalityViolations
