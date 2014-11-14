@@ -78,6 +78,10 @@ func ComputeBadness(distancesArray [][]int, arrayWidth int, triangular bool, get
 				secondSide := distancesArray[i][k]
 				thirdSide := distancesArray[j][k]
 
+				if firstSide == -1 || secondSide == -1 || thirdSide == -1 {
+					continue
+				}
+
 				a := max(firstSide, secondSide, thirdSide)
 				c := min(firstSide, secondSide, thirdSide)
 				b := firstSide + secondSide + thirdSide - a - c
