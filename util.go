@@ -36,6 +36,23 @@ func square(x int) int {
 	return x * x
 }
 
+type Distance struct {
+	Value        int
+	LevelOfTrust int
+}
+
+func (distance Distance) IsKnown() bool {
+	return distance.Value != -1
+}
+
+func (first Distance) IsDifferentFrom(second Distance) bool {
+	return AreDifferent(first.Value, second.Value)
+}
+
+func AreDifferent(f int, s int) bool {
+	return math.Abs(float64(f-s)) > float64(f+s)/2*0.08
+}
+
 func ReadDistancesArray(size int, input bufio.Scanner) (result [][]int) {
 	var inputDistance string
 	result = make([][]int, size)
