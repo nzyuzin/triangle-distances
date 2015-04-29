@@ -25,3 +25,6 @@ go:
 
 clean:
 	rm -rf $(EXECUTABLES)
+
+cleantest:
+	rm -f ./testdata/{guessed,compared,unfilled}/*
