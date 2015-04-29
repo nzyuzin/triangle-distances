@@ -27,7 +27,7 @@ func main() {
 	in := bufio.NewScanner(os.Stdin)
 	inputNumbers := ioutil.ReadDistancesArray(arraySize, *in)
 	distances := buildDistancesArray(inputNumbers)
-	fillingResult := fillMissingDistances(distances)
+	fillingResult := fillDistances(distances)
 	ioutil.PrintDistancesArray(fillingResult)
 }
 
@@ -54,7 +54,7 @@ func buildDistance(distance int) (result ioutil.Distance) {
 	return
 }
 
-func fillMissingDistances(distancesArray [][]ioutil.Distance) (result [][]int) {
+func fillDistances(distancesArray [][]ioutil.Distance) (result [][]int) {
 	result = make([][]int, len(distancesArray))
 	for i := range result {
 		result[i] = make([]int, len(distancesArray))
@@ -68,7 +68,7 @@ func fillMissingDistances(distancesArray [][]ioutil.Distance) (result [][]int) {
 		}
 		for j := initJ; j < len(distancesArray); j++ {
 			if !distancesArray[i][j].IsKnown() {
-				distancesArray[i][j] = calculateMissingDistance(distancesArray, i, j)
+				distancesArray[i][j] = calculateDistance(distancesArray, i, j)
 				distancesArray[i][j].LevelOfTrust += 1
 			}
 			result[i][j] = distancesArray[i][j].Value
@@ -82,22 +82,21 @@ func fillMissingDistances(distancesArray [][]ioutil.Distance) (result [][]int) {
 	return
 }
 
-func calculateMissingDistance(distances [][]ioutil.Distance, row int, col int) (result ioutil.Distance) {
+func calculateDistance(distances [][]ioutil.Distance, row int, col int) (result ioutil.Distance) {
 	if row == col {
 		return ioutil.Distance{0, 0} // We assume that distance between same objects is 0
 	}
 	if DEBUG {
 		log.Printf("Calculating distance for [%d, %d]", row, col)
 	}
-	var differentDistances []ioutil.Distance = getDifferentDistances(distances, row, col)
-	if len(differentDistances) == 0 {
+	var distanceCandidated []ioutil.Distance = getDistanceCandidates(distances, row, col)
+	if len(distanceCandidated) == 0 {
 		if DEBUG {
-			log.Printf("No different distances found")
+			log.Printf("No distance candidate is found")
 		}
 		return ioutil.Distance{-1, -1}
 	}
-	var equivalences = getEquivalentCountArray(differentDistances)
-	var frequencyCount = getDistanceToFrequence(differentDistances, equivalences)
+	var frequencyCount = getFrequences(distanceCandidated)
 	if DEBUG {
 		log.Printf("frequencyCount = %v", frequencyCount)
 	}
@@ -106,7 +105,7 @@ func calculateMissingDistance(distances [][]ioutil.Distance, row int, col int) (
 		freqCountCopy[k] = v
 	}
 	for len(freqCountCopy) != 0 {
-		var possibleDistance = getMostFrequentDistance(freqCountCopy)
+		var possibleDistance = getMostFrequent(freqCountCopy)
 		if isDistanceGood(possibleDistance, frequencyCount) {
 			result = ioutil.Distance{possibleDistance, 1}
 			break
@@ -114,7 +113,7 @@ func calculateMissingDistance(distances [][]ioutil.Distance, row int, col int) (
 		delete(freqCountCopy, possibleDistance)
 	}
 	if len(freqCountCopy) == 0 {
-		result = ioutil.Distance{getMostFrequentDistance(frequencyCount), 1}
+		result = ioutil.Distance{getMostFrequent(frequencyCount), 1}
 	}
 	if DEBUG {
 		log.Printf("guessed distance = %v", result)
@@ -122,7 +121,7 @@ func calculateMissingDistance(distances [][]ioutil.Distance, row int, col int) (
 	return
 }
 
-func getDifferentDistances(distances [][]ioutil.Distance, row int, col int) (result []ioutil.Distance) {
+func getDistanceCandidates(distances [][]ioutil.Distance, row int, col int) (result []ioutil.Distance) {
 	for i := max(row, col); i < len(distances); i++ {
 		toSourceByRow := distances[row][i]
 		toAdjacentByRow := distances[col][i]
@@ -140,22 +139,18 @@ func getDifferentDistances(distances [][]ioutil.Distance, row int, col int) (res
 	return
 }
 
-func getEquivalentCountArray(distances []ioutil.Distance) (equivalentDistances []int) {
-	equivalentDistances = make([]int, len(distances))
-	for i := range equivalentDistances {
-		equivalentDistances[i] = i
+func getFrequences(distances []ioutil.Distance) (result map[int]int) {
+	var equivalences = make([]int, len(distances))
+	for i := range equivalences {
+		equivalences[i] = i
 	}
 	for i := 0; i < len(distances)-1; i++ {
 		for j := i + 1; j < len(distances); j++ {
 			if !distances[i].IsDifferentFrom(distances[j]) {
-				equivalentDistances[j] = equivalentDistances[i]
+				equivalences[j] = equivalences[i]
 			}
 		}
 	}
-	return
-}
-
-func getDistanceToFrequence(distances []ioutil.Distance, equivalences []int) (result map[int]int) {
 	result = make(map[int]int)
 	for _, v := range equivalences {
 		result[distances[v].Value] += 1
@@ -163,7 +158,7 @@ func getDistanceToFrequence(distances []ioutil.Distance, equivalences []int) (re
 	return
 }
 
-func getMostFrequentDistance(distanceFrequency map[int]int) (result int) {
+func getMostFrequent(distanceFrequency map[int]int) (result int) {
 	maxCount := 0
 	for k, v := range distanceFrequency {
 		if v > maxCount {
