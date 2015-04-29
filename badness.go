@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"errors"
 	"flag"
 	"fmt"
 	"ioutil"
@@ -13,33 +12,6 @@ import (
 
 var DEBUG bool
 
-// a, b, c -- sides
-// alpha, beta, gamma -- angles (radians) opposite to corresponding side
-// a: alpha, b: beta, c: gamma
-type Triangle struct {
-	a, b, c            int
-	alpha, beta, gamma float64
-}
-
-func BuildTriangle(a int, b int, c int) (result Triangle, err error) {
-	if a+b < c || a+c < b || b+c < a {
-		return Triangle{a, b, c,
-				getAngle(a, b, c), getAngle(b, a, c), getAngle(c, a, b)},
-			errors.New(fmt.Sprintf("Triangle inequality doesn't hold for [%d %d %d]!", a, b, c))
-	}
-	return Triangle{a, b, c,
-		getAngle(a, b, c), getAngle(b, a, c), getAngle(c, a, b)}, nil
-}
-
-func getAngle(toSide int, oneSide int, anotherSide int) float64 {
-	return math.Acos(float64(square(oneSide)+square(anotherSide)-square(toSide)) /
-		float64(2*oneSide*anotherSide))
-}
-
-func square(x int) int {
-	return x * x
-}
-
 func main() {
 	var arrayWidth int
 	var triangular bool
@@ -48,23 +20,22 @@ func main() {
 	flag.BoolVar(&triangular, "t", false, `Specifies if input array should be
 	treated like upper-triangular matrix`)
 	flag.Parse()
-
 	if arrayWidth < 0 {
 		flag.Usage()
 		os.Exit(1)
 	}
-
 	distancesArray := ioutil.ReadDistancesArray(arrayWidth, *bufio.NewScanner(os.Stdin))
-
 	badnessValue, invalidTriangles := ComputeBadness(distancesArray, arrayWidth, triangular, badness)
 	fmt.Printf("%f %d\n", badnessValue, invalidTriangles)
 }
 
-func badness(triangle Triangle) float64 {
-	return float64(triangle.a-triangle.b) / float64(triangle.a)
+func badness(triangle ioutil.Triangle) float64 {
+	A := 1.0 - math.Min(float64(triangle.B)/float64(triangle.A), float64(triangle.C)/float64(triangle.B))
+	B := math.Max(triangle.Alpha-math.Pi/3.0, 0.0) / (2 * math.Pi / 3)
+	return (A + B) / 2
 }
 
-func ComputeBadness(distancesArray [][]int, arrayWidth int, triangular bool, getBadness func(Triangle) float64) (float64, int) {
+func ComputeBadness(distancesArray [][]int, arrayWidth int, triangular bool, getBadness func(ioutil.Triangle) float64) (float64, int) {
 	var averageBadness float64 = 0
 	var amountOfTriangles float64 = 0
 	var triangleInequalityViolations int = 0
@@ -86,7 +57,7 @@ func ComputeBadness(distancesArray [][]int, arrayWidth int, triangular bool, get
 				c := min(firstSide, secondSide, thirdSide)
 				b := firstSide + secondSide + thirdSide - a - c
 
-				triangle, err := BuildTriangle(a, b, c)
+				triangle, err := ioutil.BuildTriangle(a, b, c)
 				if err != nil {
 					triangleInequalityViolations++
 					if DEBUG {
@@ -95,6 +66,9 @@ func ComputeBadness(distancesArray [][]int, arrayWidth int, triangular bool, get
 					continue
 				}
 				badness := getBadness(triangle)
+				if math.IsNaN(badness) {
+					continue
+				}
 				averageBadness += badness
 				amountOfTriangles++
 			}

@@ -101,56 +101,56 @@ func fillMissingDistances(distancesArray [][]Distance) (result [][]int) {
 	return
 }
 
-func calculateMissingDistance(distances [][]Distance, row int, col int) Distance {
+func calculateMissingDistance(distances [][]Distance, row int, col int) (result Distance) {
 	if row == col {
 		return Distance{0, 0} // We assume that distance between same objects is 0
 	}
-
 	if DEBUG {
 		log.Printf("Calculating distance for [%d, %d]", row, col)
 	}
-
-	var differentDistances []Distance
-
-	for i := max(row, col); i < len(distances); i++ {
-		toSourceByRow := distances[row][i]
-		toAdjacentByRow := distances[col][i]
-		if toSourceByRow.isKnown() && toAdjacentByRow.isKnown() && toSourceByRow.differentFrom(toAdjacentByRow) {
-			differentDistances = append(differentDistances, toSourceByRow, toAdjacentByRow)
-		}
-	}
-
-	for i := 0; i < max(row, col); i++ {
-		toSourceByCol := distances[i][row]
-		toAdjacentByCol := distances[i][col]
-		if toSourceByCol.isKnown() && toAdjacentByCol.isKnown() && toSourceByCol.differentFrom(toAdjacentByCol) {
-			differentDistances = append(differentDistances, toSourceByCol, toAdjacentByCol)
-		}
-	}
-
-	return findBestGuess(differentDistances)
-}
-
-func max(f int, s int) int {
-	return int(math.Max(float64(f), float64(s)))
-}
-
-func findBestGuess(distances []Distance) Distance {
-	if len(distances) == 0 {
+	var differentDistances []Distance = getDifferentDistances(distances, row, col)
+	if len(differentDistances) == 0 {
 		if DEBUG {
 			log.Printf("No different distances found")
 		}
 		return Distance{-1, -1}
 	}
-
 	if DEBUG {
-		log.Printf("Known distances: %v", distances)
+		log.Printf("Known distances: %v", differentDistances)
 	}
-	equivalentDistances := make([]int, len(distances))
+	var equivalences = getEquivalentCountArray(differentDistances)
+	var frequencyCount = getDistanceToFrequence(differentDistances, equivalences)
+	var possibleDistance = getMostCommonDistance(differentDistances, frequencyCount)
+	result = Distance{possibleDistance, 1}
+	if DEBUG {
+		log.Printf("guessed distance = %v", result)
+	}
+	return
+}
+
+func getDifferentDistances(distances [][]Distance, row int, col int) (result []Distance) {
+	for i := max(row, col); i < len(distances); i++ {
+		toSourceByRow := distances[row][i]
+		toAdjacentByRow := distances[col][i]
+		if toSourceByRow.isKnown() && toAdjacentByRow.isKnown() && toSourceByRow.differentFrom(toAdjacentByRow) {
+			result = append(result, toSourceByRow, toAdjacentByRow)
+		}
+	}
+	for i := 0; i < max(row, col); i++ {
+		toSourceByCol := distances[i][row]
+		toAdjacentByCol := distances[i][col]
+		if toSourceByCol.isKnown() && toAdjacentByCol.isKnown() && toSourceByCol.differentFrom(toAdjacentByCol) {
+			result = append(result, toSourceByCol, toAdjacentByCol)
+		}
+	}
+	return
+}
+
+func getEquivalentCountArray(distances []Distance) (equivalentDistances []int) {
+	equivalentDistances = make([]int, len(distances))
 	for i := range equivalentDistances {
 		equivalentDistances[i] = i
 	}
-
 	for i := 0; i < len(distances)-1; i++ {
 		for j := i + 1; j < len(distances); j++ {
 			if !distances[i].differentFrom(distances[j]) {
@@ -158,37 +158,37 @@ func findBestGuess(distances []Distance) Distance {
 			}
 		}
 	}
-	return getMostCommonDistance(distances, equivalentDistances)
+	return
 }
 
-func getMostCommonDistance(distances []Distance, equivalentDistances []int) Distance {
-	amountOfEquivalent := make([]int, len(distances))
-	for i := range amountOfEquivalent {
-		amountOfEquivalent[i] = 0
+func getDistanceToFrequence(distances []Distance, equivalences []int) (result map[int]int) {
+	result = make(map[int]int)
+	for _, v := range equivalences {
+		result[distances[v].value] += 1
 	}
+	return
+}
 
-	for i := range equivalentDistances {
-		amountOfEquivalent[equivalentDistances[i]] += 1
-	}
-
-	max := 0
-	for i := range amountOfEquivalent {
-		if amountOfEquivalent[i] > amountOfEquivalent[max] {
-			max = i
+func getMostCommonDistance(distances []Distance, distanceFrequency map[int]int) (result int) {
+	maxCount := 0
+	for k, v := range distanceFrequency {
+		if v > maxCount {
+			maxCount = v
+			result = k
 		}
 	}
+	return
+}
 
-	result := 0
-	for i := range equivalentDistances {
-		if equivalentDistances[i] == max {
-			result += distances[i].value / amountOfEquivalent[max]
-		}
+func validTriangle(a int, b int, c int) bool {
+	_, err := ioutil.BuildTriangle(a, b, c)
+	if err != nil {
+		log.Printf("error for %d %d %d", a, b, c)
+		return false
 	}
+	return true
+}
 
-	if DEBUG {
-		log.Printf("amountOfEquivalent = %v, equivalentDistances = %v, result = %d",
-			amountOfEquivalent, equivalentDistances, result)
-	}
-
-	return Distance{result, distances[max].levelOfTrust}
+func max(f int, s int) int {
+	return int(math.Max(float64(f), float64(s)))
 }
