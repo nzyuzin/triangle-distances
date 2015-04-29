@@ -20,14 +20,11 @@ func main() {
 	treated like upper-triangular matrix`)
 	flag.BoolVar(&DEBUG, "d", false, "Enables debug logging")
 	flag.Parse()
-
 	if arraySize < 0 {
 		flag.Usage()
 		os.Exit(1)
 	}
-
 	in := bufio.NewScanner(os.Stdin)
-
 	inputNumbers := ioutil.ReadDistancesArray(arraySize, *in)
 	distances := buildDistancesArray(inputNumbers)
 	fillingResult := fillMissingDistances(distances)
@@ -39,13 +36,11 @@ func buildDistancesArray(distancesArray [][]int) (result [][]ioutil.Distance) {
 	for i := range result {
 		result[i] = make([]ioutil.Distance, len(distancesArray))
 	}
-
 	for i := range distancesArray {
 		for j := range distancesArray {
 			result[i][j] = buildDistance(distancesArray[i][j])
 		}
 	}
-
 	return
 }
 
@@ -64,7 +59,6 @@ func fillMissingDistances(distancesArray [][]ioutil.Distance) (result [][]int) {
 	for i := range result {
 		result[i] = make([]int, len(distancesArray))
 	}
-
 	for i := range distancesArray {
 		var initJ int
 		if triangular {
@@ -102,13 +96,26 @@ func calculateMissingDistance(distances [][]ioutil.Distance, row int, col int) (
 		}
 		return ioutil.Distance{-1, -1}
 	}
-	if DEBUG {
-		log.Printf("Known distances: %v", differentDistances)
-	}
 	var equivalences = getEquivalentCountArray(differentDistances)
 	var frequencyCount = getDistanceToFrequence(differentDistances, equivalences)
-	var possibleDistance = getMostFrequentDistance(differentDistances, frequencyCount)
-	result = ioutil.Distance{possibleDistance, 1}
+	if DEBUG {
+		log.Printf("frequencyCount = %v", frequencyCount)
+	}
+	var freqCountCopy = make(map[int]int)
+	for k, v := range frequencyCount {
+		freqCountCopy[k] = v
+	}
+	for len(freqCountCopy) != 0 {
+		var possibleDistance = getMostFrequentDistance(freqCountCopy)
+		if isDistanceGood(possibleDistance, frequencyCount) {
+			result = ioutil.Distance{possibleDistance, 1}
+			break
+		}
+		delete(freqCountCopy, possibleDistance)
+	}
+	if len(freqCountCopy) == 0 {
+		result = ioutil.Distance{getMostFrequentDistance(frequencyCount), 1}
+	}
 	if DEBUG {
 		log.Printf("guessed distance = %v", result)
 	}
@@ -156,7 +163,7 @@ func getDistanceToFrequence(distances []ioutil.Distance, equivalences []int) (re
 	return
 }
 
-func getMostFrequentDistance(distances []ioutil.Distance, distanceFrequency map[int]int) (result int) {
+func getMostFrequentDistance(distanceFrequency map[int]int) (result int) {
 	maxCount := 0
 	for k, v := range distanceFrequency {
 		if v > maxCount {
@@ -167,7 +174,19 @@ func getMostFrequentDistance(distances []ioutil.Distance, distanceFrequency map[
 	return
 }
 
-func validTriangle(a int, b int, c int) bool {
+func isDistanceGood(possibleDistance int, frequencyCount map[int]int) bool {
+	var badTriangles = 0
+	var allTriangles = 0
+	for distance, count := range frequencyCount {
+		allTriangles += count
+		if ioutil.AreDifferent(possibleDistance, distance) && !isValidTriangle(possibleDistance, possibleDistance, distance) {
+			badTriangles += count
+		}
+	}
+	return badTriangles*2 < allTriangles
+}
+
+func isValidTriangle(a int, b int, c int) bool {
 	_, err := ioutil.BuildTriangle(a, b, c)
 	if err != nil {
 		log.Printf("error for %d %d %d", a, b, c)
