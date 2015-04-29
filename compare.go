@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"flag"
-	"fmt"
 	"ioutil"
 	"log"
 	"math"
@@ -20,7 +19,7 @@ func main() {
 	flag.BoolVar(&DEBUG, "d", false, "Enables debug logging")
 	flag.BoolVar(&triangular, "t", false, `Specifies if input array should be
 	treated like upper-triangular matrix`)
-	flag.IntVar(&threshold, "td", -1, "Print distances which value exceeds given threshold and exit. Negative value is ignored")
+	flag.IntVar(&threshold, "td", -1, "Print distances which value exceeds given threshold. Negative value is ignored")
 	flag.Parse()
 	fileName := flag.Args()[0]
 	if arrayWidth < 0 {
@@ -69,8 +68,7 @@ func main() {
 			}
 			difference := int(math.Abs(float64(source - compared)))
 			if threshold >= 0 && difference > threshold {
-				fmt.Printf("[%d, %d] source = %d, compared = %d, difference = %d\n", i, j, source, compared, difference)
-				continue
+				log.Printf("[%d, %d] source = %d, compared = %d, difference = %d\n", i, j, source, compared, difference)
 			}
 			differences[i][j] = difference
 			if DEBUG {
@@ -81,9 +79,6 @@ func main() {
 				}
 			}
 		}
-	}
-	if threshold >= 0 {
-		os.Exit(0)
 	}
 	if DEBUG {
 		averageDifference /= float64(differentNumbersAmount)
