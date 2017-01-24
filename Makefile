@@ -1,7 +1,7 @@
 CC=gcc
 GO=go build
 CFLAGS=-Wall
-DEBUGFLAGS=-D DEBUG
+DEBUGFLAGS=-D DEBUG -g
 UNFILL=unfill
 FILL=fill
 COMPARE=compare
