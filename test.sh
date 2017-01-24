@@ -22,3 +22,4 @@ make > /dev/null &&
 ./fill -d -s 100 -t < $UNFILLED_FILE > $GUESSED_FILE 2> $LOG_DIR/fill.log &&
 ./compare -t -d -td 1000 -s 100 $SOURCE_FILE < $GUESSED_FILE > /dev/null 2> $LOG_DIR/compare.log &&
 tail -4 $LOG_DIR/compare.log
+./badness -s=100 < $GUESSED_FILE
